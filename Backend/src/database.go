@@ -12,7 +12,7 @@ type DataBase struct {
 }
 
 type Store struct {
-	Id	int	`db:"id" json:"userID"`
+	Id	int	`db:"id" json:"storeID"`
 }
 
 func InitDB() (*DataBase, error) {
