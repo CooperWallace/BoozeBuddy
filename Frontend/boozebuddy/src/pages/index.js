@@ -1,7 +1,9 @@
 import Home from './home'
+import StoreListing from './storelisting'
 
 let pages = {
-    Home
+    Home,
+	StoreListing
 }
 
 export default pages;
