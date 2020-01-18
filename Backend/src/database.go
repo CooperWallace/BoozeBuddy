@@ -1,11 +1,10 @@
 package main
 
 import (
-	// "fmt"
 	"github.com/jmoiron/sqlx" //Library with DB interaction functions
 	_ "github.com/mattn/go-sqlite3"
 	_ "github.com/lib/pq" //DB driver
-)	// //DB driver library
+)
 
 type DataBase struct {
 	*sqlx.DB

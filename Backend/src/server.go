@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/gorilla/mux" //DB interface library
-	//"strings"
-	//"encoding/json"
 )
 
 // Simple wrapper struct to contain pointer to database for easy context access
