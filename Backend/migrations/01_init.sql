@@ -7,7 +7,7 @@ CREATE TABLE store (
 	address text
 );
 
--- + goose Down
+-- +goose Down
 -- SQL in this section is executed when the migrations is rolled back.
 
 DROP TABLE store;

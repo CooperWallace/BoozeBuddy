@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"encoding/json"
 	"github.com/gorilla/mux" //DB interface library
-	//_ "github.com/mattn/go-sqlite3" //DB driver library
 	//"strings"
 	//"encoding/json"
 )
@@ -27,7 +26,7 @@ func (wrapper *Wrapper) getStores(w http.ResponseWriter, r *http.Request) {
 	// Encode data to JSON and write to response writer
 	err = json.NewEncoder(w).Encode(stores)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), https.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 }

@@ -3,8 +3,9 @@ package main
 import (
 	// "fmt"
 	"github.com/jmoiron/sqlx" //Library with DB interaction functions
+	_ "github.com/mattn/go-sqlite3"
 	_ "github.com/lib/pq" //DB driver
-)
+)	// //DB driver library
 
 type DataBase struct {
 	*sqlx.DB
@@ -14,7 +15,7 @@ type Store struct {
 	Id	int	`db:"id" json:"userID"`
 }
 
-func InitDB(connectionString string) (*DataBase, error) {
+func InitDB() (*DataBase, error) {
 	db := DataBase{}
 	var err error
 	db.DB, err = sqlx.Connect("sqlite3", "boozebuddy.db")
