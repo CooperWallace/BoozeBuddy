@@ -4,9 +4,7 @@
 CREATE TABLE store (
 	id integer primary key,
 	name text,
-	address text,
-	latitude text,
-	longitude text
+	address text
 );
 
 -- +goose Down
