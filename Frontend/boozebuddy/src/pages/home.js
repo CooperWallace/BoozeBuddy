@@ -6,12 +6,19 @@ export default class Home extends Component {
 
     constructor(props) {
         super(props);
+		this.state = {};
     }
 
     componentDidMount() {
-        console.log(navigator.geolocation.getCurrentPosition((pos) => {
-            console.log(pos)
-        }))
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition((pos) => {
+				this.setState({
+					lat: pos.coords.latitude,
+					lng: pos.coords.longitude
+				})
+				console.log(this.state.lon);
+			})
+		}
     }
 
     render() {
@@ -22,8 +29,8 @@ export default class Home extends Component {
                         <components.BoozeMap
                             width={"500px"}
                             height={"500px"}
-                            lat={53.54}
-                            lng={-113.49}
+                            lat={this.state.lat ? this.state.lat : -53.54}
+                            lng={this.state.lng ? this.state.lng : -113.49}
                             zoom={15} />
                     </Grid.Column>
                 </Grid.Row>

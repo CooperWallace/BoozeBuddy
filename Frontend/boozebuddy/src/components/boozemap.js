@@ -8,21 +8,10 @@ export default class BoozeMap extends React.Component {
 		}
 	}
 
-	componentDidMount() {
-		//check for props and apply them to map
-		this.setState({
-			lat: this.props.lat,
-			lng: this.props.lng,
-			zoom: this.props.zoom,
-			width: this.props.width,
-			height: this.props.height
-		})
-	}
-
 	render() {
-		const position = [this.state.lat, this.state.lng];
+		const position = [this.props.lat, this.props.lng];
 		return (
-			<Map style={{ width: this.state.width, height: this.state.height }} center={position} zoom={this.state.zoom}>
+			<Map style={{ width: this.props.width, height: this.props.height }} center={position} zoom={this.props.zoom}>
 				<TileLayer
 					attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 					url='https://{s}.tile.osm.org/{z}/{x}/{y}.png'
