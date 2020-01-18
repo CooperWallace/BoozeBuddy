@@ -1,8 +1,8 @@
 package main
 
 import (
-	// "fmt"
 	"github.com/jmoiron/sqlx" //Library with DB interaction functions
+	_ "github.com/mattn/go-sqlite3"
 	_ "github.com/lib/pq" //DB driver
 )
 
@@ -11,10 +11,12 @@ type DataBase struct {
 }
 
 type Store struct {
-	Id	int	`db:"id" json:"userID"`
+	Id	int	`db:"id" json:"storeID"`
+	Name	string	`db:"name"	json: "name"`
+	Address string	`db:"address" json:"address"`
 }
 
-func InitDB(connectionString string) (*DataBase, error) {
+func InitDB() (*DataBase, error) {
 	db := DataBase{}
 	var err error
 	db.DB, err = sqlx.Connect("sqlite3", "boozebuddy.db")
@@ -26,7 +28,7 @@ func InitDB(connectionString string) (*DataBase, error) {
 }
 
 func (db *DataBase) GetStores() ([]Store, error) {
-	query := `SELECT id FROM store`
+	query := `SELECT * FROM store`
 
 	stores := []Store{}
 
