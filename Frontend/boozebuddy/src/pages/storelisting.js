@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Grid, List } from 'semantic-ui-react';
+import { Grid, List, Message} from 'semantic-ui-react';
 import components from '../components/index';
 
 
@@ -26,8 +26,13 @@ export default class StoreListing extends Component {
                 </Grid.Row>
 				<Grid.Row>
                     <Grid.Column>
-						Store Name
-						Store Address
+						<Message>
+						<Message.Header>Store Information</Message.Header>
+						<Message.List>
+						<Message.Item>Store Name</Message.Item>
+						<Message.Item>Store Address</Message.Item>
+						</Message.List>
+						</Message>
                     </Grid.Column>
                 </Grid.Row>
 				<Grid.Row>
