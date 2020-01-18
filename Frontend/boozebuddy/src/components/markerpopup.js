@@ -19,7 +19,7 @@ export default class MarkerPopup extends Component {
                 </Grid.Row>
                 <Grid.Row>
                     <Grid.Column>
-                        <a href={"/listing" + this.props.name}>Visit</a>
+                        <a href={"/listing/" + this.props.name}>Visit</a>
                     </Grid.Column>
                 </Grid.Row>
             </Grid>

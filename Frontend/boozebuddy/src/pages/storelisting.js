@@ -10,7 +10,8 @@ export default class StoreListing extends Component {
 		this.state = {};
     }
 
-	itemdetails (itemName) {
+	itemdetails(itemName) {
+        console.log(this.props.match)
 		return (
 			<List.Item>{itemName}</List.Item>
 		)
