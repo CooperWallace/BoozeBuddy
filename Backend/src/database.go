@@ -12,6 +12,8 @@ type DataBase struct {
 
 type Store struct {
 	Id	int	`db:"id" json:"storeID"`
+	Name	string	`db:"name"	json: "name"`
+	Address string	`db:"address" json:"address"`
 }
 
 func InitDB() (*DataBase, error) {
@@ -26,7 +28,7 @@ func InitDB() (*DataBase, error) {
 }
 
 func (db *DataBase) GetStores() ([]Store, error) {
-	query := `SELECT id FROM store`
+	query := `SELECT * FROM store`
 
 	stores := []Store{}
 

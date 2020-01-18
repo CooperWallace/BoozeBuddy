@@ -4,7 +4,7 @@
 CREATE TABLE store (
 	id integer primary key,
 	name text,
-	address text
+	address text,
 );
 
 -- +goose Down
