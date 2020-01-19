@@ -7,6 +7,12 @@ CREATE TABLE store (
 	address text
 );
 
+CREATE TABLE user (
+    id integer primary key,
+    username text,
+    password text
+);
+
 -- +goose Down
 -- SQL in this section is executed when the migrations is rolled back.
 

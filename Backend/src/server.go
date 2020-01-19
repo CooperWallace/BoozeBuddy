@@ -49,6 +49,7 @@ func main() {
 	// Associate routes with handler functions
 	subRouter := router.PathPrefix("/api").Subrouter()
 	subRouter.HandleFunc("/stores", wrapper.getStores).Methods("GET")
+	subRouter.HandleFunc("/registration", wrapper.handleRegistration).Methods("POST")
 
 	// Listen and serve server on port 8080
 	http.ListenAndServe(":8080", router)

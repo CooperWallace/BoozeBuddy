@@ -38,3 +38,14 @@ func (db *DataBase) GetStores() ([]Store, error) {
 	}
 	return stores, nil
 }
+
+// This function takes a presenter's UID, an evaluators UID, a question ID, and an
+// answer text and creates a new entry in the answers table with the fields specified
+func (db *DataBase) CreateUser(username string, password string) error {
+
+    insertCmd := `INSERT INTO user (username, password) 
+                        VALUES ($1, $2)`
+
+    _, err := db.Exec(insertCmd, username, password)
+    return err
+}
