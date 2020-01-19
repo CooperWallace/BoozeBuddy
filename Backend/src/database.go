@@ -16,6 +16,12 @@ type Store struct {
 	Address string	`db:"address" json:"address"`
 }
 
+type User struct {
+    ID       int	`json: "id" db:"id"`
+    Username string    `json: "username" db:"username"`
+    Password string    `json: "password" db:"password"`
+}
+
 func InitDB() (*DataBase, error) {
 	db := DataBase{}
 	var err error
