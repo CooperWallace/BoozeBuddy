@@ -12,6 +12,7 @@ export default class Home extends Component {
             searchLoading: false,
             searchResults: [],
             searchValue: "",
+            storeData: [],
             debug: true
         };
 
@@ -91,7 +92,7 @@ export default class Home extends Component {
     }
 
     componentDidMount() {
-		this.getStoreAddresses();
+        this.getStoreAddresses();
 
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
@@ -116,26 +117,33 @@ export default class Home extends Component {
         }
     }
 
-	getStoreAddresses() {
-		let info = [];
+    getStoreAddresses() {
+        let info = [];
 
-		fetch("http://localhost:8080/api/stores")
-			.then(results => {return results.json()})
-			.then(data => {
-				data.forEach( elem => {
-					let lngLat = utility.LatLonToAddress(elem.address.split(",")[0]);
-					lngLat.then( data => {
-						info.push({
-							name: elem.Name,
-							address: elem.address.split(",")[0],
-							lat: data.lat,
-							lng: data.lng
-						})
-					});
-				})
-			}).then( this.setState({ storePositions: info }) )
-			.then(console.log(this.state.storePositions));
-	}
+        fetch("http://localhost:8080/api/stores")
+            .then(results => { return results.json() })
+            .then(data => {
+                data.forEach(elem => {
+                    let lngLat = utility.LatLonToAddress(elem.address.split(",")[0]);
+                    lngLat.then(data => {
+                        info.push({
+                            name: elem.Name,
+                            address: elem.address.split(",")[0],
+                            lat: data.lat,
+                            lng: data.lng
+                        })
+                    });
+                })
+
+                return info
+            }).then((res) => {
+                this.setState({
+                    storeData: res
+                }, () => {
+                    console.log(this.state.storeData)
+                })
+            })
+    }
 
     render() {
 
