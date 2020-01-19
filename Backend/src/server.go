@@ -78,6 +78,7 @@ func (wrapper *Wrapper) authenticateMW(next http.Handler) http.Handler {
 				return
 			} else {
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+				return
 			}
 		}
 		if !tkn.Valid {
@@ -221,7 +222,7 @@ func (wrapper *Wrapper) handleLogin (w http.ResponseWriter, r *http.Request) {
 			tokenString, err := token.SignedString(jwtKey)
 			if err != nil {
 				// If there is an error in creating the JWT return an internal server error
-				w.WriteHeader(http.StatusInternalServerError)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
 
