@@ -60,6 +60,10 @@ func comparePasswords(hashedPwd string, plainPwd []byte) bool {
 
 func (wrapper *Wrapper) authenticateMW(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 		jwtString := r.Header.Get("Authorization")
 
 		if len(jwtString) < 1 {
