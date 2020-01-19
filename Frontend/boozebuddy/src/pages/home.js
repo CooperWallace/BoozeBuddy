@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Grid, Modal, Button, Form } from 'semantic-ui-react';
 import components from '../components/index';
+import utility from '../addressUtility.js';
 
 export default class Home extends Component {
     constructor(props) {
@@ -24,6 +25,8 @@ export default class Home extends Component {
     }
 
     componentDidMount() {
+		this.getStoreAddresses();
+
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
 
@@ -45,6 +48,27 @@ export default class Home extends Component {
             }, 3000)
         }
     }
+
+	getStoreAddresses() {
+		let info = [];
+
+		fetch("http://localhost:8080/api/stores")
+			.then(results => {return results.json()})
+			.then(data => {
+				data.forEach( elem => {
+					let lngLat = utility.LatLonToAddress(elem.address.split(",")[0]);
+					lngLat.then( data => {
+						info.push({
+							name: elem.Name,
+							address: elem.address.split(",")[0],
+							lat: data.lat,
+							lng: data.lng
+						})
+					});
+				})
+			}).then( this.setState({ storePositions: info }) )
+			.then(console.log(this.state.storePositions));
+	}
 
     render() {
 
