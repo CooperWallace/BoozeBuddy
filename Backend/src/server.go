@@ -33,6 +33,26 @@ func (wrapper *Wrapper) getStores(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (wrapper *Wrapper) addStore(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	reqBodyValues := Store{}
+
+	err := json.NewDecoder(r.Body).Decode(&reqBodyValues)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	err = wrapper.AddStore(reqBodyValues.Name, reqBodyValues.Address)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+}
+
 func main() {
 	// Call InitDB function in database.go to retrieve pointer to DB
 	db, err := InitDB()
@@ -53,6 +73,8 @@ func main() {
 	// Associate routes with handler functions
 	subRouter := router.PathPrefix("/api").Subrouter()
 	subRouter.HandleFunc("/stores", wrapper.getStores).Methods("GET")
+	subRouter.HandleFunc("/stores", wrapper.addStore).Methods("POST")
+	subRouter.HandleFunc("/registration", wrapper.handleRegistration).Methods("POST")
 
 	// Listen and serve server on port 8080
 	http.ListenAndServe(":8080", router)

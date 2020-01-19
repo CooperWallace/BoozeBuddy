@@ -7,11 +7,16 @@ CREATE TABLE store (
 	address text
 );
 
+CREATE TABLE user (
+    id integer primary key,
+    username text,
+    password text
+);
+
 CREATE TABLE item (
 	id integer primary key,
 	name text,
-	price real,
-	
+	price real
 );
 
 -- +goose Down
