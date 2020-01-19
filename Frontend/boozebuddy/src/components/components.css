@@ -29,6 +29,16 @@
     margin-right: 65px;
 }
 
-.ui .active .visible .search {
+.results {
+    margin: 0 auto !important;
+    position: inherit !important;
+}
 
+.listing-segment{
+    background:linear-gradient(to left,#AA2E00,transparent) !important;
+}
+
+.listing-segment:hover{
+    cursor: pointer;
+    opacity: 80%;
 }

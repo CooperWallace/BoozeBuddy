@@ -1,12 +1,8 @@
 import React, { Component } from 'react'
-import { Grid, Header } from 'semantic-ui-react';
+import { Grid } from 'semantic-ui-react';
 import './components.css';
 
 export default class BoozeHeader extends Component {
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         return (
             <Grid.Row style={{ width: this.props.width }} className="booze-header-container" verticalAlign="middle" columns={2}>

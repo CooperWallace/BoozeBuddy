@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
-import { Grid, List, Message, Modal, Form, Button } from 'semantic-ui-react';
+import { Grid, List, Message, Input, Dropdown, Image, Segment, Button } from 'semantic-ui-react';
 import components from '../components/index';
-import utility from '../addressUtility.js';
 import '../components/components.css';
 
 export default class StoreListing extends Component {
 
 	constructor(props) {
 		super(props);
-		this.state = {};
+		this.state = {
+			listingData: []
+		};
 
 		this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
 		this.handleSignInModalClose = this.handleSignInModalClose.bind(this);
@@ -28,23 +29,80 @@ export default class StoreListing extends Component {
 	}
 
 	componentDidMount() {
-		utility.LatLonToAddress("9927 84 Ave NW");
 		this.updateWindowDimensions();
 		window.addEventListener('resize', this.updateWindowDimensions);
+
+
+		//sample get info for listings at a store
+		this.setState({
+			listingData: [
+				{
+					name: "Heineken",
+					price: 25,
+					category: "beer"
+				},
+				{
+					name: "Grey Goose",
+					price: 56,
+					category: "vodka"
+				}
+			]
+		})
 	}
 
 	updateWindowDimensions() {
 		this.setState({ width: window.innerWidth, height: window.innerHeight });
 	}
 
-	itemdetails(itemName) {
-		return (
-			<List.Item>{itemName}</List.Item>
-		)
+	createItemsList() {
+		let items = [];
+
+		//foreach the state object that will come from the api for listings at this store
+		this.state.listingData.forEach((val, index) => {
+			let imageSource;
+
+			if (val.category === "beer") {
+				imageSource = "beer.png"
+			} else if (val.category === "vodka") {
+				imageSource = "vodka.png"
+			} else if (val.category === "rum") {
+				imageSource = "rum.png"
+			} else if (val.category === "tequila") {
+				imageSource = "tequila.png"
+			} //TODO : add more types
+
+			items.push(
+				<List.Item key={index}>
+					<Segment className="listing-segment">
+						<Grid verticalAlign="middle">
+							<Grid.Row columns={3}>
+								<Grid.Column width={1}>
+									<Image avatar src={process.env.PUBLIC_URL + "/" + imageSource} />
+								</Grid.Column>
+								<Grid.Column width={8}>
+									{val.name}
+								</Grid.Column>
+								<Grid.Column textAlign="right">
+									${val.price}
+								</Grid.Column>
+							</Grid.Row>
+						</Grid>
+					</Segment>
+				</List.Item>
+			)
+		})
+		return items;
 	}
 
 	render() {
 		if (this.state.width && this.state.height) {
+			//TODO add sorting
+			const options = [
+				{ key: 1, text: 'Price', value: 1 },
+				{ key: 2, text: 'Recently Added', value: 2 },
+				{ key: 3, text: 'Best Value', value: 3 },
+			]
+
 			return (
 				<Grid>
 					<components.BoozeHeader handleSignIn={this.handleSignInModalOpen} history={this.props.history} width={this.state.width} />
@@ -64,10 +122,29 @@ export default class StoreListing extends Component {
 							</Message>
 						</Grid.Column>
 					</Grid.Row>
+					<Grid.Row className="store-listing-container" columns={3}>
+						<Grid.Column>
+							<h4>Category</h4>
+							<Input placeholder="Category" list="categories" />
+							<datalist id="categories">
+								<option value="Beer" />
+								<option value="Vodka" />
+								<option value="Rum" />
+								<option value="Tequila" />
+							</datalist>
+						</Grid.Column>
+						<Grid.Column>
+							<h4>Sort by</h4>
+							<Dropdown clearable options={options} selection />
+						</Grid.Column>
+						<Grid.Column>
+							<Button style={{marginTop:'35px'}} color="orange">Add Item</Button>
+						</Grid.Column>
+					</Grid.Row>
 					<Grid.Row className="store-listing-container">
 						<Grid.Column>
-							<List>
-								{this.itemdetails("Test")}
+							<List size={"massive"}>
+								{this.createItemsList()}
 							</List>
 						</Grid.Column>
 					</Grid.Row>
@@ -91,8 +168,5 @@ export default class StoreListing extends Component {
 				</Grid>
 			)
 		}
-
 	}
-
-
 }
