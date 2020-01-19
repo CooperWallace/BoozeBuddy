@@ -13,6 +13,10 @@ type Wrapper struct {
 }
 
 func (wrapper *Wrapper) getStores(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	// Call GetStores (located in database.go)
 	stores, err := wrapper.GetStores()
 

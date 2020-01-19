@@ -13,6 +13,12 @@ CREATE TABLE user (
     password text
 );
 
+CREATE TABLE item (
+	id integer primary key,
+	name text,
+	price real
+);
+
 -- +goose Down
 -- SQL in this section is executed when the migrations is rolled back.
 
