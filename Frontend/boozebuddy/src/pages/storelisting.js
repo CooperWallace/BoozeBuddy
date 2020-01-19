@@ -23,6 +23,7 @@ export default class StoreListing extends Component {
 		this.handleAddModalOpen = this.handleAddModalOpen.bind(this);
 		this.handleAddModalClose = this.handleAddModalClose.bind(this);
 		this.getStoreDetails = this.getStoreDetails.bind(this);
+		this.sortListings = this.sortListings.bind(this);
 	}
 
 	handleDropDownChange(e, data, name) {
@@ -157,6 +158,32 @@ export default class StoreListing extends Component {
 		this.setState({ width: window.innerWidth, height: window.innerHeight });
 	}
 
+	sortListings(e, data) {
+		let copyData = [...this.state.listingData]
+
+		if (data.value === 2) {
+			copyData.sort((a, b) => {
+				let aDate = new Date(a.timestamp);
+				let bDate = new Date(b.timestamp);
+
+				return aDate - bDate;
+			})
+			this.setState({
+				listingData: copyData
+			})
+
+		} else if (data.value === 1) {
+			copyData.sort((a, b) => {
+				return a.price - b.price
+			})
+
+			this.setState({
+				listingData: copyData
+			})
+
+		}
+	}
+
 	createItemsList() {
 		let items = [];
 
@@ -172,7 +199,11 @@ export default class StoreListing extends Component {
 				imageSource = "rum.png"
 			} else if (val.category === "tequila") {
 				imageSource = "tequila.png"
-			} //TODO : add more types
+			} else if (val.category === "gin") {
+				imageSource = "gin.png"
+			} else if (val.category === "whiskey") {
+				imageSource = "whiskey.png"
+			}
 
 			items.push(
 				<List.Item key={index}>
@@ -202,8 +233,7 @@ export default class StoreListing extends Component {
 			//TODO add sorting
 			const options = [
 				{ key: 1, text: 'Price', value: 1 },
-				{ key: 2, text: 'Recently Added', value: 2 },
-				{ key: 3, text: 'Best Value', value: 3 },
+				{ key: 2, text: 'Recently Added', value: 2 }
 			]
 
 			const categories = [
@@ -236,18 +266,8 @@ export default class StoreListing extends Component {
 					</Grid.Row>
 					<Grid.Row className="store-listing-container" columns={3}>
 						<Grid.Column>
-							<h4>Category</h4>
-							<Input placeholder="Category" list="categories" />
-							<datalist id="categories">
-								<option value="Beer" />
-								<option value="Vodka" />
-								<option value="Rum" />
-								<option value="Tequila" />
-							</datalist>
-						</Grid.Column>
-						<Grid.Column>
 							<h4>Sort by</h4>
-							<Dropdown clearable options={options} selection />
+							<Dropdown onChange={(e, data) => this.sortListings(e, data)} clearable options={options} selection />
 						</Grid.Column>
 						<Grid.Column>
 							<Button onClick={this.handleAddModalOpen} style={{ marginTop: '35px' }} color="orange">Add Item</Button>
