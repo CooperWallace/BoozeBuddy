@@ -24,8 +24,6 @@ export default class BoozeMap extends React.Component {
 
 			return markers;
 		}
-
-
 	}
 
 	render() {

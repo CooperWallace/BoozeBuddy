@@ -8,6 +8,7 @@
     color: white;
     margin-top: auto !important;
     margin-bottom: auto !important;
+    margin-left: 65px;
 }
 
 .booze-header-text:hover{
@@ -16,9 +17,18 @@
 
 .booze-header-text-right{
     color: white;
-    margin-right: 15px;
+    margin-right: 65px;
 }
 
 .booze-header-text-right:hover{
     cursor: pointer;
+}
+
+.store-listing-container {
+    margin-left: 65px;
+    margin-right: 65px;
+}
+
+.ui .active .visible .search {
+
 }

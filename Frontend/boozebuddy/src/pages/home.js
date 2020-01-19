@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Grid, Modal, Button, Form } from 'semantic-ui-react';
+import { Grid, Search, Button } from 'semantic-ui-react';
+import _ from 'lodash';
 import components from '../components/index';
 import utility from '../addressUtility.js';
 
@@ -7,25 +8,91 @@ export default class Home extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            userLoggedIn: false
+            userLoggedIn: false,
+            searchLoading: false,
+            searchResults: [],
+            searchValue: "",
+            storeData: [],
+            debug: true
         };
 
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
-        this.handleSignIn = this.handleSignIn.bind(this);
+        this.handleSignInModalClose = this.handleSignInModalClose.bind(this);
+        this.handleSignInModalOpen = this.handleSignInModalOpen.bind(this);
+    }
+
+    handleSignInModalClose() {
+        this.setState({
+            loginModalOpen: false
+        })
+    }
+
+    handleSignInModalOpen() {
+        this.setState({
+            loginModalOpen: true
+        })
+    }
+
+    handleSearchChange = (e, { value }) => {
+
+        let source = [
+            {
+                "title": "Johns, Goodwin and Ullrich",
+                "description": "Reduced hybrid model",
+                "image": "https://s3.amazonaws.com/uifaces/faces/twitter/chris_witko/128.jpg",
+                "price": "$46.38"
+            },
+            {
+                "title": "Lemke, Beer and Marvin",
+                "description": "Object-based optimal moderator",
+                "image": "https://s3.amazonaws.com/uifaces/faces/twitter/giancarlon/128.jpg",
+                "price": "$32.76"
+            },
+            {
+                "title": "Senger - Kling",
+                "description": "De-engineered responsive middleware",
+                "image": "https://s3.amazonaws.com/uifaces/faces/twitter/carlosm/128.jpg",
+                "price": "$51.72"
+            },
+            {
+                "title": "Graham Group",
+                "description": "Cross-platform optimal flexibility",
+                "image": "https://s3.amazonaws.com/uifaces/faces/twitter/soffes/128.jpg",
+                "price": "$8.57"
+            },
+            {
+                "title": "Mills Group",
+                "description": "Fundamental homogeneous projection",
+                "image": "https://s3.amazonaws.com/uifaces/faces/twitter/tur8le/128.jpg",
+                "price": "$85.26"
+            }
+        ]
+
+        this.setState({ isLoading: true, searchValue: value })
+
+        setTimeout(() => {
+            if (this.state.searchValue.length < 1) return this.setState({
+                searchLoading: false,
+                searchResults: [],
+                searchValue: "",
+            })
+
+            const re = new RegExp(_.escapeRegExp(this.state.searchValue), 'i')
+            const isMatch = (result) => re.test(result.title)
+
+            this.setState({
+                isLoading: false,
+                results: _.filter(source, isMatch),
+            })
+        }, 300)
     }
 
     updateWindowDimensions() {
         this.setState({ width: window.innerWidth, height: window.innerHeight });
     }
 
-    handleSignIn() {
-        this.setState({
-            loginModalOpen: true
-        });
-    }
-
     componentDidMount() {
-		this.getStoreAddresses();
+        this.getStoreAddresses();
 
         this.updateWindowDimensions();
         window.addEventListener('resize', this.updateWindowDimensions);
@@ -42,33 +109,41 @@ export default class Home extends Component {
         //add event for if the user isnt logged in we will bug them in x seconds
         if (!this.state.userLoggedIn) {
             setTimeout(() => {
-                this.setState({
-                    loginModalOpen: true
-                })
-            }, 3000)
+                if (!this.state.debug) {
+                    this.handleSignInModalOpen()
+                }
+
+            }, 15000)
         }
     }
 
-	getStoreAddresses() {
-		let info = [];
+    getStoreAddresses() {
+        let info = [];
 
-		fetch("http://localhost:8080/api/stores")
-			.then(results => {return results.json()})
-			.then(data => {
-				data.forEach( elem => {
-					let lngLat = utility.LatLonToAddress(elem.address.split(",")[0]);
-					lngLat.then( data => {
-						info.push({
-							name: elem.Name,
-							address: elem.address.split(",")[0],
-							lat: data.lat,
-							lng: data.lng
-						})
-					});
-				})
-			}).then( this.setState({ storePositions: info }) )
-			.then(console.log(this.state.storePositions));
-	}
+        fetch("http://localhost:8080/api/stores")
+            .then(results => { return results.json() })
+            .then(data => {
+                data.forEach(elem => {
+                    let lngLat = utility.LatLonToAddress(elem.address.split(",")[0]);
+                    lngLat.then(data => {
+                        info.push({
+                            name: elem.Name,
+                            address: elem.address.split(",")[0],
+                            lat: data.lat,
+                            lng: data.lng
+                        })
+                    });
+                })
+
+                return info
+            }).then((res) => {
+                this.setState({
+                    storeData: res
+                }, () => {
+                    console.log(this.state.storeData)
+                })
+            })
+    }
 
     render() {
 
@@ -76,7 +151,7 @@ export default class Home extends Component {
             return (
                 <Grid>
                     <components.BoozeHeader
-                        handleSignIn={this.handleSignIn}
+                        handleSignIn={this.handleSignInModalOpen}
                         history={this.props.history}
                         width={this.state.width} />
                     <Grid.Row>
@@ -112,27 +187,22 @@ export default class Home extends Component {
                     </Grid.Row>
                     <Grid.Row>
                         <Grid.Column>
-                            <Modal
-                                size="tiny"
-                                open={this.state.loginModalOpen}
-                                closeOnDimmerClick={true}
-                                onClose={() => { this.setState({ loginModalOpen: false }) }}
-                            >
-                                <Modal.Content>
-                                    <Form>
-                                        <Form.Field>
-                                            <label>Username</label>
-                                            <input placeholder="username..." />
-                                        </Form.Field>
-                                        <Form.Field>
-                                            <label>Password</label>
-                                            <input type="password" />
-                                        </Form.Field>
-                                        <Button type="submit" primary>Login</Button>
-                                        <Button onClick={() => { this.setState({ loginModalOpen: false }) }} color="red">Cancel</Button>
-                                    </Form>
-                                </Modal.Content>
-                            </Modal>
+                            <components.LoginModal
+                                active={this.state.loginModalOpen}
+                                handleClose={this.handleSignInModalClose}
+                            />
+                        </Grid.Column>
+                    </Grid.Row>
+                    <Grid.Row textAlign='center'>
+                        <Grid.Column textAlign='center'>
+                            <Search
+                                loading={this.state.searchLoading}
+                                onSearchChange={_.debounce(this.handleSearchChange, 500, {
+                                    leading: true
+                                })}
+                                results={this.state.results}
+                                value={this.state.searchValue}
+                            />
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
