@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"encoding/json"
+	"strconv"
 	"github.com/gorilla/mux" //DB interface library
 	"golang.org/x/crypto/bcrypt"
 	"log"
+	"database/sql"
 )
 
 // Simple wrapper struct to contain pointer to database for easy context access
@@ -65,6 +67,24 @@ func (wrapper *Wrapper) getStores(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (wrapper *Wrapper) getStoreDetails(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	reqVars := mux.Vars(r)
+	storeID, err := strconv.Atoi(reqVars["storeid"])
+
+	store, err := wrapper.GetStoreDetails(storeID)
+
+	if err != nil && err != sql.ErrNoRows {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(store)
+}
+
 func (wrapper *Wrapper) addStore(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -86,20 +106,36 @@ func (wrapper *Wrapper) addStore(w http.ResponseWriter, r *http.Request) {
 }
 
 func (wrapper *Wrapper) handleRegistration (w http.ResponseWriter, r *http.Request) {
-	RegistrationBody := User{}
-	err := json.NewDecoder(r.Body).Decode(&RegistrationBody)
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	reqBody := User{}
+	err := json.NewDecoder(r.Body).Decode(&reqBody)
 
 	if err != nil {
 		http.Error(w, "Error decoding JSON for login route", http.StatusBadRequest)
 		return
 	}
 
-	bytePass := []byte(RegistrationBody.Password)
-	HashPass := hashAndSalt(bytePass)
+	// Check if username is already taken first
+	_, err = wrapper.LookupUser(reqBody.Username)
+	if err != nil && err != sql.ErrNoRows {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 
-	err = wrapper.CreateUser(RegistrationBody.Username, HashPass)
+	// If there already is a user with this name in database
+	if err != sql.ErrNoRows {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	// Else, create user
+	} else {
+		bytePass := []byte(reqBody.Password)
+		HashPass := hashAndSalt(bytePass)
 
-	return
+		err = wrapper.CreateUser(reqBody.Username, HashPass)
+	}
 }
 
 func main() {
@@ -119,11 +155,12 @@ func main() {
 	// Create wrapper struct containing pointer to DB
 	wrapper := Wrapper{db}
 
+	router.HandleFunc("/register", wrapper.handleRegistration).Methods("POST")
 	// Associate routes with handler functions
 	subRouter := router.PathPrefix("/api").Subrouter()
 	subRouter.HandleFunc("/stores", wrapper.getStores).Methods("GET")
 	subRouter.HandleFunc("/stores", wrapper.addStore).Methods("POST")
-	subRouter.HandleFunc("/registration", wrapper.handleRegistration).Methods("POST")
+	subRouter.HandleFunc("/stores/{storeid:[0-9]+}", wrapper.getStoreDetails).Methods("GET")
 
 	// Listen and serve server on port 8080
 	http.ListenAndServe(":8080", router)

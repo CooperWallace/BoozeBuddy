@@ -9,7 +9,7 @@ CREATE TABLE store (
 
 CREATE TABLE user (
     id integer primary key,
-    username text,
+    username text unique,
     password text
 );
 
@@ -22,4 +22,6 @@ CREATE TABLE item (
 -- +goose Down
 -- SQL in this section is executed when the migrations is rolled back.
 
+DROP TABLE item;
 DROP TABLE store;
+DROP TABLE user;
