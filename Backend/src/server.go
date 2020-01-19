@@ -369,6 +369,7 @@ func main() {
 	secureSubRouter.HandleFunc("/stores/{storeid:[0-9]+}/items", wrapper.addStoreItems).Methods("POST")
 	secureSubRouter.Use(wrapper.authenticateMW)
 
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("../../Frontend/boozebuddy/build")))
 	// Listen and serve server on port 8080
 	http.ListenAndServe(":8080", handlers.CORS(headers, methods, origins)(router))
 }
