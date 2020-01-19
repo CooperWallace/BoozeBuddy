@@ -15,8 +15,8 @@ export default class BoozeMap extends React.Component {
 	renderMarkers() {
 		let markers = [];
 		if (this.props.markers && this.props.markers.length > 0) {
-
 			this.props.markers.forEach((marker, i) => {
+
 				//takes a position argument [lat, long] for displaying to map
 				markers.push(
 					<Marker position={[marker.lat, marker.lng]} key={i} >
@@ -34,7 +34,11 @@ export default class BoozeMap extends React.Component {
 		//check if the long & lat changed and open the popup there if that is the case
 		if (oldProps.lat !== this.props.lat || oldProps.lng !== this.props.lng) {
 			this.mapRef.current.leafletElement.eachLayer((layer) => {
-				layer.openPopup([this.props.lat, this.props.lng])
+				if (layer.options) {
+					if (layer.options.position && layer.options.position[0] === this.props.lat) {
+						layer.openPopup([this.props.lat, this.props.lng])
+					}
+				}
 			})
 		}
 	}

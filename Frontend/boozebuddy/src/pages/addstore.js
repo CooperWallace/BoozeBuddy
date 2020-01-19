@@ -56,6 +56,10 @@ export default class AddStore extends Component {
             })
                 .then((res) => {
                     console.log(res)
+                    if (res.ok) {
+                        //go back to main page
+                        this.props.history.push("/");
+                    }
                 })
                 .catch((err) => {
                     console.error(err)
