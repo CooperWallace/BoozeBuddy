@@ -4,6 +4,8 @@ import components from '../components/index';
 import Cookies from 'js-cookie';
 import '../components/components.css';
 
+const axios = require('axios');
+
 export default class StoreListing extends Component {
 
 	constructor(props) {
@@ -65,13 +67,33 @@ export default class StoreListing extends Component {
 
 		let token = Cookies.get('token');
 
+		let data = JSON.stringify({
+			name: this.state.name,
+			category: this.state.category,
+			price: this.state.price
+		});
+
+		// let url = "http://localhost:8080/api/stores/" + this.props.match.params.storeID + "/items";
+
+		// axios({
+		// 	url: url, method: 'post', headers: {
+		// 		'Authorization': token, 'Accept': 'application/json',
+		// 		'Content-Type': 'application/json',
+		// 	}, data: data
+		// })
+		// 	.then((res) => {
+		// 		console.log(res)
+		// 	})
+		// 	.catch((err) => {
+		// 		console.error(err)
+		// 	})
+
 		//now post to the api
+		
 		fetch("http://localhost:8080/api/stores/" + this.props.match.params.storeID + "/items", {
 			method: "POST",
-			withCredentials: true,
-			credentials: 'include',
 			headers: {
-				'Authorization': token
+				'Authorization': token,
 			},
 			body: JSON.stringify({
 				name: this.state.name,
@@ -95,7 +117,7 @@ export default class StoreListing extends Component {
 			})
 			.catch((err) => {
 				console.error(err)
-			})
+			}) 
 	}
 
 	componentDidMount() {
