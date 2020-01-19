@@ -107,3 +107,12 @@ func (db *DataBase) GetStoreItems(storeID int) ([]Item, error) {
 	}
 	return items, nil
 }
+
+func (db *DataBase) AddStoreItems(newItem Item) error {
+
+	insertCmd := `INSERT INTO item (name, category, price, userid, storeid)
+		VALUES (:name, :category, :price, :userid, :storeid)`
+
+	_, err := db.NamedExec(insertCmd, newItem)
+	return err
+}
