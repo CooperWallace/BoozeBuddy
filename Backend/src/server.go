@@ -276,6 +276,7 @@ func main() {
 
 	router.HandleFunc("/register", wrapper.handleRegistration).Methods("POST")
 	router.HandleFunc("/login", wrapper.handleLogin).Methods("POST")
+
 	// Associate routes with handler functions
 	subRouter := router.PathPrefix("/api").Subrouter()
 	subRouter.HandleFunc("/stores", wrapper.getStores).Methods("GET")
