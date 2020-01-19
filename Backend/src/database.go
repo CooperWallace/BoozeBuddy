@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/jmoiron/sqlx" //Library with DB interaction functions
+	_ "github.com/lib/pq"     //DB driver
 	_ "github.com/mattn/go-sqlite3"
-	_ "github.com/lib/pq" //DB driver
 )
 
 type DataBase struct {
@@ -11,15 +11,25 @@ type DataBase struct {
 }
 
 type Store struct {
-	Id	int	`db:"id" json:"storeID"`
-	Name	string	`db:"name"	json: "name"`
-	Address string	`db:"address" json:"address"`
+	Id      int    `db:"id" json:"storeID"`
+	Name    string `db:"name"	json: "name"`
+	Address string `db:"address" json:"address"`
 }
 
 type User struct {
-    Id       int	`db:"id" json:"id""`
-    Username string    `db:"username" json:"username"`
-    Password string    `db:"password" json:"password"`
+	Id       int    `db:"id" json:"id""`
+	Username string `db:"username" json:"username"`
+	Password string `db:"password" json:"password"`
+}
+
+type Item struct {
+	Id        int     `db:"id" json:"id""`
+	Timestamp string  `db:"timestamp" json:"timestamp""`
+	Name      string  `db:"name" json:"name""`
+	Category  string  `db:"category" json:"category""`
+	Price     float64 `db:"price" json:"price""`
+	Userid    int     `db:"userid" json:"userid""`
+	Storeid   int     `db:"storeid" json:"storeid""`
 }
 
 func InitDB() (*DataBase, error) {
@@ -67,11 +77,11 @@ func (db *DataBase) AddStore(name string, address string) error {
 
 func (db *DataBase) CreateUser(username string, password string) error {
 
-    insertCmd := `INSERT INTO user (username, password)
+	insertCmd := `INSERT INTO user (username, password)
                         VALUES ($1, $2)`
 
-    _, err := db.Exec(insertCmd, username, password)
-    return err
+	_, err := db.Exec(insertCmd, username, password)
+	return err
 }
 
 func (db *DataBase) LookupUser(username string) (User, error) {
@@ -84,4 +94,16 @@ func (db *DataBase) LookupUser(username string) (User, error) {
 		return User{}, err
 	}
 	return user, nil
+}
+
+func (db *DataBase) GetStoreItems(storeID int) ([]Item, error) {
+	query := `SELECT * FROM item WHERE storeid = $1`
+
+	items := []Item{}
+
+	err := db.Select(&items, query, storeID)
+	if err != nil {
+		return nil, err
+	}
+	return items, nil
 }

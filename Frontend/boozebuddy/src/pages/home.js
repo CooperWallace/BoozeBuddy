@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Grid, Search, Button } from 'semantic-ui-react';
+import { Grid, Search } from 'semantic-ui-react';
 import _ from 'lodash';
 import components from '../components/index';
 import utility from '../addressUtility.js';
@@ -13,12 +13,21 @@ export default class Home extends Component {
             searchResults: [],
             searchValue: "",
             storeData: [],
+            fullStoreData: [],
+            focusPoint: null,
+            zoom: 10, //might change
             debug: true
         };
 
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
         this.handleSignInModalClose = this.handleSignInModalClose.bind(this);
         this.handleSignInModalOpen = this.handleSignInModalOpen.bind(this);
+    }
+
+    clearMapFocus() {
+        this.setState({
+            focusPoint: null
+        })
     }
 
     handleSignInModalClose() {
@@ -35,38 +44,18 @@ export default class Home extends Component {
 
     handleSearchChange = (e, { value }) => {
 
-        let source = [
-            {
-                "title": "Johns, Goodwin and Ullrich",
-                "description": "Reduced hybrid model",
-                "image": "https://s3.amazonaws.com/uifaces/faces/twitter/chris_witko/128.jpg",
-                "price": "$46.38"
-            },
-            {
-                "title": "Lemke, Beer and Marvin",
-                "description": "Object-based optimal moderator",
-                "image": "https://s3.amazonaws.com/uifaces/faces/twitter/giancarlon/128.jpg",
-                "price": "$32.76"
-            },
-            {
-                "title": "Senger - Kling",
-                "description": "De-engineered responsive middleware",
-                "image": "https://s3.amazonaws.com/uifaces/faces/twitter/carlosm/128.jpg",
-                "price": "$51.72"
-            },
-            {
-                "title": "Graham Group",
-                "description": "Cross-platform optimal flexibility",
-                "image": "https://s3.amazonaws.com/uifaces/faces/twitter/soffes/128.jpg",
-                "price": "$8.57"
-            },
-            {
-                "title": "Mills Group",
-                "description": "Fundamental homogeneous projection",
-                "image": "https://s3.amazonaws.com/uifaces/faces/twitter/tur8le/128.jpg",
-                "price": "$85.26"
-            }
-        ]
+        //create source values from state
+        let source = [];
+
+        this.state.fullStoreData.forEach((val) => {
+            source.push({
+                title: val.Name,
+                description: val.address,
+                id: val.storeID,
+                lat: val.lat,
+                lng: val.lng
+            })
+        })
 
         this.setState({ isLoading: true, searchValue: value })
 
@@ -78,7 +67,7 @@ export default class Home extends Component {
             })
 
             const re = new RegExp(_.escapeRegExp(this.state.searchValue), 'i')
-            const isMatch = (result) => re.test(result.title)
+            let isMatch = (result) => re.test(result.title)
 
             this.setState({
                 isLoading: false,
@@ -118,29 +107,25 @@ export default class Home extends Component {
     }
 
     getStoreAddresses() {
-        let info = [];
-
         fetch("http://localhost:8080/api/stores")
             .then(results => { return results.json() })
             .then(data => {
-                data.forEach(elem => {
-                    let lngLat = utility.LatLonToAddress(elem.address.split(",")[0]);
-                    lngLat.then(data => {
-                        info.push({
-                            name: elem.Name,
-                            address: elem.address.split(",")[0],
-                            lat: data.lat,
-                            lng: data.lng
-                        })
-                    });
-                })
-
-                return info
-            }).then((res) => {
                 this.setState({
-                    storeData: res
+                    storeData: data
                 }, () => {
-                    console.log(this.state.storeData)
+                    Promise.all(this.state.storeData.map((elem) => {
+                        return utility.LatLonToAddress(elem.address.split(",")[0])
+                    })).then((data) => {
+                        let vals = [];
+                        for (let i = 0; i < this.state.storeData.length; i++) {
+                            vals.push({
+                                ...this.state.storeData[i], ...data[i]
+                            })
+                        }
+                        this.setState({
+                            fullStoreData: vals
+                        })
+                    })
                 })
             })
     }
@@ -161,28 +146,9 @@ export default class Home extends Component {
                                 height={this.state.height / 2}
                                 lat={this.state.lat ? this.state.lat : 53.54}
                                 lng={this.state.lng ? this.state.lng : -113.49}
-                                markers={[
-                                    //sample data from the api
-                                    {
-                                        name: "Test marker 1",
-                                        address: {
-                                            street: "5514 55st NW",
-                                            city: "Edmonton",
-                                            province: "Alberta"
-                                        },
-                                        position: [53.76, -113.49]
-                                    },
-                                    {
-                                        name: "Test marker 2",
-                                        address: {
-                                            street: "5514 55st NW",
-                                            city: "Edmonton",
-                                            province: "Alberta"
-                                        },
-                                        position: [53.40, -113.13]
-                                    }
-                                ]}
-                                zoom={10} />
+                                markers={this.state.fullStoreData}
+                                focus={this.state.focusPoint}
+                                zoom={this.state.zoom} />
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row>
@@ -200,6 +166,14 @@ export default class Home extends Component {
                                 onSearchChange={_.debounce(this.handleSearchChange, 500, {
                                     leading: true
                                 })}
+                                onResultSelect={(e, data) => {
+                                    //set the maps zoom on the object in question
+                                    this.setState({
+                                        lat: data.result.lat,
+                                        lng: data.result.lng,
+                                        zoom: this.state.zoom <= 12 ? 12 : this.state.zoom
+                                    })
+                                }}
                                 results={this.state.results}
                                 value={this.state.searchValue}
                             />

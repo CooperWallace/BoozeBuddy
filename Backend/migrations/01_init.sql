@@ -15,8 +15,12 @@ CREATE TABLE user (
 
 CREATE TABLE item (
 	id integer primary key,
+	timestamp DATE DEFAULT (datetime('now','localtime')),
 	name text,
-	price real
+	category text,
+	price real,
+	userid integer,
+	storeid integer
 );
 
 -- +goose Down
