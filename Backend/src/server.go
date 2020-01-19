@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 	"strconv"
+	"time"
+
 	"github.com/gorilla/mux" //DB interface library
 	"golang.org/x/crypto/bcrypt"
 	"github.com/dgrijalva/jwt-go"
@@ -186,10 +188,10 @@ func (wrapper *Wrapper) handleRegistration(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (wrapper *Wrapper) handleLogin (w http.ResponseWriter, r *http.Request) {
+func (wrapper *Wrapper) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	reqBody := User{}
 	err := json.NewDecoder(r.Body).Decode(&reqBody)
@@ -205,17 +207,17 @@ func (wrapper *Wrapper) handleLogin (w http.ResponseWriter, r *http.Request) {
 	if err != nil && err != sql.ErrNoRows {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
-	// Case if user with given username does not exist
+		// Case if user with given username does not exist
 	} else if err == sql.ErrNoRows {
 		//login invalid
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	} else {
-		if (comparePasswords(user.Password, []byte(reqBody.Password))) {
+		if comparePasswords(user.Password, []byte(reqBody.Password)) {
 			//login valid, create and return JWT to client
 			expirationTime := time.Now().Add(60 * time.Minute)
 			claims := &Claims{
 				Username: user.Username,
-				StandardClaims: jwt.StandardClaims {
+				StandardClaims: jwt.StandardClaims{
 					ExpiresAt: expirationTime.Unix(),
 				},
 			}
@@ -232,7 +234,7 @@ func (wrapper *Wrapper) handleLogin (w http.ResponseWriter, r *http.Request) {
 
 			respBody := "{\"jwt\": \"" + tokenString + "\"}"
 			fmt.Fprintf(w, respBody)
-			
+
 		} else {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		}
@@ -257,6 +259,31 @@ func (wrapper *Wrapper) getStoreItems(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(item)
 }
 
+func (wrapper *Wrapper) addStoreItems(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	byteResp, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	// Decode the JSON Data into a usable variable
+	item := Item{}
+	if err := json.Unmarshal(byteResp, &item); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	err = wrapper.AddStoreItems(item)
+
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	}
+
+}
+
 func main() {
 	// Call InitDB function in database.go to retrieve pointer to DB
 	db, err := InitDB()
@@ -276,13 +303,17 @@ func main() {
 
 	router.HandleFunc("/register", wrapper.handleRegistration).Methods("POST")
 	router.HandleFunc("/login", wrapper.handleLogin).Methods("POST")
+
 	// Associate routes with handler functions
-	subRouter := router.PathPrefix("/api").Subrouter()
-	subRouter.HandleFunc("/stores", wrapper.getStores).Methods("GET")
-	subRouter.HandleFunc("/stores", wrapper.addStore).Methods("POST")
-	subRouter.HandleFunc("/stores/{storeid:[0-9]+}", wrapper.getStoreDetails).Methods("GET")
-	subRouter.HandleFunc("/stores/{storeid:[0-9]+}/items", wrapper.getStoreItems).Methods("GET")
-	subRouter.Use(wrapper.authenticateMW)
+	openSubRouter := router.PathPrefix("/api").Subrouter()
+	openSubRouter.HandleFunc("/stores", wrapper.getStores).Methods("GET")
+	openSubRouter.HandleFunc("/stores", wrapper.addStore).Methods("POST")
+	openSubRouter.HandleFunc("/stores/{storeid:[0-9]+}", wrapper.getStoreDetails).Methods("GET")
+	openSubRouter.HandleFunc("/stores/{storeid:[0-9]+}/items", wrapper.getStoreItems).Methods("GET")
+
+	secureSubRouter := router.PathPrefix("/api").Subrouter()
+	secureSubRouter.HandleFunc("/stores/{storeid:[0-9]+}/items", wrapper.addStoreItems).Methods("POST")
+	secureSubRouter.Use(wrapper.authenticateMW)
 
 	// Listen and serve server on port 8080
 	http.ListenAndServe(":8080", router)
