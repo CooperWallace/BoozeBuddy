@@ -32,22 +32,33 @@ export default class StoreListing extends Component {
 		this.updateWindowDimensions();
 		window.addEventListener('resize', this.updateWindowDimensions);
 
-
-		//sample get info for listings at a store
-		this.setState({
-			listingData: [
-				{
-					name: "Heineken",
-					price: 25,
-					category: "beer"
-				},
-				{
-					name: "Grey Goose",
-					price: 56,
-					category: "vodka"
-				}
-			]
-		})
+		//get store info based off of id that is in the url
+		fetch("http://localhost:8080/api/stores/" + this.props.match.params.storeID)
+			.then((res) => {
+				return res.json()
+			})
+			.then((data) => {
+				this.setState({
+					storeDetails: data
+				}, () => {
+					//now go get the entries for this store
+					fetch("http://localhost:8080/api/stores/" + this.props.match.params.storeID + "/items")
+						.then((res) => {
+							return res.json()
+						})
+						.then((data) => {
+							this.setState({
+								listingData: data
+							})
+						})
+						.catch((err) => {
+							console.error(err)
+						})
+				})
+			})
+			.catch((err) => {
+				console.error(err)
+			})
 	}
 
 	updateWindowDimensions() {
@@ -95,7 +106,7 @@ export default class StoreListing extends Component {
 	}
 
 	render() {
-		if (this.state.width && this.state.height) {
+		if (this.state.width && this.state.height && this.state.storeDetails) {
 			//TODO add sorting
 			const options = [
 				{ key: 1, text: 'Price', value: 1 },
@@ -116,8 +127,8 @@ export default class StoreListing extends Component {
 							<Message>
 								<Message.Header>Store Information</Message.Header>
 								<Message.List>
-									<Message.Item>Store Name: {this.props.match.params.storename}</Message.Item>
-									<Message.Item>Store Address</Message.Item>
+									<Message.Item><b>Store Name: </b>{this.state.storeDetails.Name}</Message.Item>
+									<Message.Item><b>Store Address: </b>{this.state.storeDetails.address}</Message.Item>
 								</Message.List>
 							</Message>
 						</Grid.Column>
@@ -138,7 +149,7 @@ export default class StoreListing extends Component {
 							<Dropdown clearable options={options} selection />
 						</Grid.Column>
 						<Grid.Column>
-							<Button style={{marginTop:'35px'}} color="orange">Add Item</Button>
+							<Button style={{ marginTop: '35px' }} color="orange">Add Item</Button>
 						</Grid.Column>
 					</Grid.Row>
 					<Grid.Row className="store-listing-container">
