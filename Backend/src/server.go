@@ -228,13 +228,7 @@ func (wrapper *Wrapper) handleLogin (w http.ResponseWriter, r *http.Request) {
 
 			respBody := "{\"jwt\": \"" + tokenString + "\"}"
 			fmt.Fprintf(w, respBody)
-
-			// // Set client cookie to JWT we just generated
-			// http.SetCookie(w, &http.Cookie{
-			// 	Name:    "token",
-			// 	Value:   tokenString,
-			// 	Expires: expirationTime,
-			// });
+			
 		} else {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		}
