@@ -1,0 +1,24 @@
+.booze-header-container {
+    background-color: #AA2E00 !important;
+    height: 100px;
+    vertical-align: middle !important;
+}
+
+.booze-header-text {
+    color: white;
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+}
+
+.booze-header-text:hover{
+    cursor: pointer;
+}
+
+.booze-header-text-right{
+    color: white;
+    margin-right: 15px;
+}
+
+.booze-header-text-right:hover{
+    cursor: pointer;
+}
