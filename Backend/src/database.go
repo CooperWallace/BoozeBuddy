@@ -17,9 +17,9 @@ type Store struct {
 }
 
 type User struct {
-    ID       int	`json: "id" db:"id"`
-    Username string    `json: "username" db:"username"`
-    Password string    `json: "password" db:"password"`
+    Id       int	`db:"id" json:"id""`
+    Username string    `db:"username" json:"username"`
+    Password string    `db:"password" json:"password"`
 }
 
 func InitDB() (*DataBase, error) {
@@ -45,6 +45,18 @@ func (db *DataBase) GetStores() ([]Store, error) {
 	return stores, nil
 }
 
+func (db *DataBase) GetStoreDetails(storeID int) (Store, error) {
+	query := `SELECT * FROM store WHERE id = $1`
+
+	store := Store{}
+
+	err := db.Get(&store, query, storeID)
+	if err != nil {
+		return Store{}, err
+	}
+	return store, nil
+}
+
 func (db *DataBase) AddStore(name string, address string) error {
 
 	insertCmd := `INSERT INTO store (name, address) VALUES ($1, $2)`
@@ -60,4 +72,16 @@ func (db *DataBase) CreateUser(username string, password string) error {
 
     _, err := db.Exec(insertCmd, username, password)
     return err
+}
+
+func (db *DataBase) LookupUser(username string) (User, error) {
+	query := `SELECT * FROM user WHERE username = $1`
+
+	user := User{}
+
+	err := db.Get(&user, query, username)
+	if err != nil {
+		return User{}, err
+	}
+	return user, nil
 }

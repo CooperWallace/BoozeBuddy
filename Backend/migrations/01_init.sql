@@ -9,17 +9,22 @@ CREATE TABLE store (
 
 CREATE TABLE user (
     id integer primary key,
-    username text,
+    username text unique,
     password text
 );
 
 CREATE TABLE item (
 	id integer primary key,
+	timestamp DATE DEFAULT (datetime('now','localtime')),
 	name text,
-	price real
+	price real,
+	userid integer,
+	storeid integer
 );
 
 -- +goose Down
 -- SQL in this section is executed when the migrations is rolled back.
 
+DROP TABLE item;
 DROP TABLE store;
+DROP TABLE user;
