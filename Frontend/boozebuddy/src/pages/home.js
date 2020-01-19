@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Grid, Search } from 'semantic-ui-react';
-import _ from 'lodash';
-import components from '../components/index';
+import _ from 'lodash';import components from '../components/index';
+import Cookies from 'js-cookie';
 import utility from '../addressUtility.js';
 
 export default class Home extends Component {
@@ -22,6 +22,7 @@ export default class Home extends Component {
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
         this.handleSignInModalClose = this.handleSignInModalClose.bind(this);
         this.handleSignInModalOpen = this.handleSignInModalOpen.bind(this);
+        this.handleAddStore = this.handleAddStore.bind(this);
     }
 
     clearMapFocus() {
@@ -130,6 +131,16 @@ export default class Home extends Component {
             })
     }
 
+	handleAddStore() {
+		//check if they're logged in or not
+		let token = Cookies.get('token');
+		if (token) {
+			this.props.history.push("/addstore");
+		} else {
+			this.handleSignInModalOpen(); //open the sign in modal
+		}
+	}
+
     render() {
 
         if (this.state.height && this.state.width) {
@@ -181,7 +192,7 @@ export default class Home extends Component {
                     </Grid.Row>
                     <Grid.Row textAlign="center">
                         <Grid.Column>
-                                Your store not here? {<a href={"/addstore"}>Add it!</a>}
+                                Your store not here? {<a href="#" onClick={this.handleAddStore}>Add it!</a>}
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
