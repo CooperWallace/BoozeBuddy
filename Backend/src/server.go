@@ -1,14 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"database/sql"
 	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
 	"strconv"
+
 	"github.com/gorilla/mux" //DB interface library
 	"golang.org/x/crypto/bcrypt"
-	"log"
-	"database/sql"
 )
 
 // Simple wrapper struct to contain pointer to database for easy context access
@@ -19,37 +20,37 @@ type Wrapper struct {
 //Following 2 functions used from https://medium.com/@jcox250/password-hash-salt-using-golang-b041dc94cb72 on hashing passwords properly
 func hashAndSalt(pwd []byte) string {
 
-    // Use GenerateFromPassword to hash & salt pwd
-    // MinCost is just an integer constant provided by the bcrypt
-    // package along with DefaultCost & MaxCost.
-    // The cost can be any value you want provided it isn't lower
-    // than the MinCost (4)
-    hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
-    if err != nil {
-        log.Println(err)
-    }
-    // GenerateFromPassword returns a byte slice so we need to
-    // convert the bytes to a string and return it
-    return string(hash)
+	// Use GenerateFromPassword to hash & salt pwd
+	// MinCost is just an integer constant provided by the bcrypt
+	// package along with DefaultCost & MaxCost.
+	// The cost can be any value you want provided it isn't lower
+	// than the MinCost (4)
+	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+	if err != nil {
+		log.Println(err)
+	}
+	// GenerateFromPassword returns a byte slice so we need to
+	// convert the bytes to a string and return it
+	return string(hash)
 }
 
 func comparePasswords(hashedPwd string, plainPwd []byte) bool {
-    // Since we'll be getting the hashed password from the DB it
-    // will be a string so we'll need to convert it to a byte slice
-    byteHash := []byte(hashedPwd)
-    err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
-    if err != nil {
-        log.Println(err)
-        return false
-    }
+	// Since we'll be getting the hashed password from the DB it
+	// will be a string so we'll need to convert it to a byte slice
+	byteHash := []byte(hashedPwd)
+	err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
 
-    return true
+	return true
 }
 
 func (wrapper *Wrapper) getStores(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	// Call GetStores (located in database.go)
 	stores, err := wrapper.GetStores()
@@ -70,7 +71,7 @@ func (wrapper *Wrapper) getStores(w http.ResponseWriter, r *http.Request) {
 func (wrapper *Wrapper) getStoreDetails(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	reqVars := mux.Vars(r)
 	storeID, err := strconv.Atoi(reqVars["storeid"])
@@ -88,7 +89,7 @@ func (wrapper *Wrapper) getStoreDetails(w http.ResponseWriter, r *http.Request) 
 func (wrapper *Wrapper) addStore(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	reqBodyValues := Store{}
 
@@ -105,10 +106,10 @@ func (wrapper *Wrapper) addStore(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (wrapper *Wrapper) handleRegistration (w http.ResponseWriter, r *http.Request) {
+func (wrapper *Wrapper) handleRegistration(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	reqBody := User{}
 	err := json.NewDecoder(r.Body).Decode(&reqBody)
@@ -129,13 +130,31 @@ func (wrapper *Wrapper) handleRegistration (w http.ResponseWriter, r *http.Reque
 	if err != sql.ErrNoRows {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
-	// Else, create user
+		// Else, create user
 	} else {
 		bytePass := []byte(reqBody.Password)
 		HashPass := hashAndSalt(bytePass)
 
 		err = wrapper.CreateUser(reqBody.Username, HashPass)
 	}
+}
+
+func (wrapper *Wrapper) getStoreItems(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	reqVars := mux.Vars(r)
+	storeID, err := strconv.Atoi(reqVars["storeid"])
+
+	item, err := wrapper.GetStoreItems(storeID)
+
+	if err != nil && err != sql.ErrNoRows {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(item)
 }
 
 func main() {
@@ -161,6 +180,7 @@ func main() {
 	subRouter.HandleFunc("/stores", wrapper.getStores).Methods("GET")
 	subRouter.HandleFunc("/stores", wrapper.addStore).Methods("POST")
 	subRouter.HandleFunc("/stores/{storeid:[0-9]+}", wrapper.getStoreDetails).Methods("GET")
+	subRouter.HandleFunc("/stores/{storeid:[0-9]+}/items", wrapper.getStoreItems).Methods("GET")
 
 	// Listen and serve server on port 8080
 	http.ListenAndServe(":8080", router)
