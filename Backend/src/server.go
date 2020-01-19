@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux" //DB interface library
 	"golang.org/x/crypto/bcrypt"
@@ -346,6 +347,11 @@ func main() {
 	// Initialize gorilla/mux router
 	router := mux.NewRouter()
 
+	// Handle CORS
+	headers := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
+	origins := handlers.AllowedOrigins([]string{"*"})
+
 	// Create wrapper struct containing pointer to DB
 	wrapper := Wrapper{db}
 
@@ -364,5 +370,5 @@ func main() {
 	secureSubRouter.Use(wrapper.authenticateMW)
 
 	// Listen and serve server on port 8080
-	http.ListenAndServe(":8080", router)
+	http.ListenAndServe(":8080", handlers.CORS(headers, methods, origins)(router))
 }
