@@ -12,6 +12,7 @@ import (
 
 	"github.com/gorilla/mux" //DB interface library
 	"golang.org/x/crypto/bcrypt"
+	"github.com/dgrijalva/jwt-go"
 )
 
 // Simple wrapper struct to contain pointer to database for easy context access
@@ -304,13 +305,15 @@ func main() {
 	router.HandleFunc("/login", wrapper.handleLogin).Methods("POST")
 
 	// Associate routes with handler functions
-	subRouter := router.PathPrefix("/api").Subrouter()
-	subRouter.HandleFunc("/stores", wrapper.getStores).Methods("GET")
-	subRouter.HandleFunc("/stores", wrapper.addStore).Methods("POST")
-	subRouter.HandleFunc("/stores/{storeid:[0-9]+}", wrapper.getStoreDetails).Methods("GET")
-	subRouter.HandleFunc("/stores/{storeid:[0-9]+}/items", wrapper.getStoreItems).Methods("GET")
-	subRouter.HandleFunc("/stores/{storeid:[0-9]+}/items", wrapper.addStoreItems).Methods("POST")
-	subRouter.Use(wrapper.authenticateMW)
+	openSubRouter := router.PathPrefix("/api").Subrouter()
+	openSubRouter.HandleFunc("/stores", wrapper.getStores).Methods("GET")
+	openSubRouter.HandleFunc("/stores", wrapper.addStore).Methods("POST")
+	openSubRouter.HandleFunc("/stores/{storeid:[0-9]+}", wrapper.getStoreDetails).Methods("GET")
+	openSubRouter.HandleFunc("/stores/{storeid:[0-9]+}/items", wrapper.getStoreItems).Methods("GET")
+
+	secureSubRouter := router.PathPrefix("/api").Subrouter()
+	secureSubRouter.HandleFunc("/stores/{storeid:[0-9]+}/items", wrapper.addStoreItems).Methods("POST")
+	secureSubRouter.Use(wrapper.authenticateMW)
 
 	// Listen and serve server on port 8080
 	http.ListenAndServe(":8080", router)
