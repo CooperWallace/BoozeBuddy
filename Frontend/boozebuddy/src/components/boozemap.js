@@ -1,6 +1,7 @@
 import React from "react"
 import { Map, TileLayer, Marker, Popup } from 'react-leaflet';
 import components from './index';
+import './components.css';
 
 export default class BoozeMap extends React.Component {
 	constructor(props) {
@@ -42,6 +43,7 @@ export default class BoozeMap extends React.Component {
 		const position = [this.props.lat, this.props.lng];
 		return (
 			<Map
+				className={"boozemap"}
 				ref={this.mapRef}
 				animate={true}
 				useFlyTo={true}

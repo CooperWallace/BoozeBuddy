@@ -68,7 +68,6 @@ func (db *DataBase) GetStoreDetails(storeID int) (Store, error) {
 }
 
 func (db *DataBase) AddStore(name string, address string) error {
-
 	insertCmd := `INSERT INTO store (name, address) VALUES ($1, $2)`
 
 	_, err := db.Exec(insertCmd, name, address)

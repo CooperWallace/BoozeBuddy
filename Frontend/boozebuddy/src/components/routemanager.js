@@ -13,6 +13,8 @@ export default class RouteManager extends Component {
                 <Switch>
                     <Route exact path='/' render={(routeProps) => (<pages.Home {...routeProps} />)} />
                     <Route exact path='/listing/:storeID' render={(routeProps) => (<pages.StoreListing {...routeProps} />)} />
+                    <Route exact path='/addstore' render={(routeProps) => (<pages.AddStore {...routeProps} />)} />
+                    <Route exact path='/register' render={(routeProps) => (<pages.Registration {...routeProps} />)} />
                 </Switch>
             </BrowserRouter>
         );

@@ -124,7 +124,7 @@ export default class Home extends Component {
                         }
                         this.setState({
                             fullStoreData: vals
-                        })
+                        }, () => console.log(this.state.fullStoreData))
                     })
                 })
             })
@@ -177,6 +177,11 @@ export default class Home extends Component {
                                 results={this.state.results}
                                 value={this.state.searchValue}
                             />
+                        </Grid.Column>
+                    </Grid.Row>
+                    <Grid.Row textAlign="center">
+                        <Grid.Column>
+                                Your store not here? {<a href={"/addstore"}>Add it!</a>}
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>

@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux" //DB interface library
 	"golang.org/x/crypto/bcrypt"
-	"github.com/dgrijalva/jwt-go"
 )
 
 // Simple wrapper struct to contain pointer to database for easy context access
@@ -158,7 +158,8 @@ func (wrapper *Wrapper) addStore(w http.ResponseWriter, r *http.Request) {
 func (wrapper *Wrapper) handleRegistration(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("content-type", "application/json")
 
 	reqBody := User{}
 	err := json.NewDecoder(r.Body).Decode(&reqBody)
@@ -185,6 +186,13 @@ func (wrapper *Wrapper) handleRegistration(w http.ResponseWriter, r *http.Reques
 		hashPass := hashAndSalt(bytePass)
 
 		err = wrapper.CreateUser(reqBody.Username, hashPass)
+
+		if err != nil {
+			panic(err)
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
 	}
 }
 
