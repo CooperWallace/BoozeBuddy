@@ -17,6 +17,7 @@ CREATE TABLE item (
 	id integer primary key,
 	timestamp DATE DEFAULT (datetime('now','localtime')),
 	name text,
+	category text,
 	price real,
 	userid integer,
 	storeid integer

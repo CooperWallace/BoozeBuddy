@@ -9,8 +9,8 @@ INSERT INTO user (username, password)
 	VALUES ('admin', '$2a$04$gJHL.4rNM17pCdYNyW3Q1.hs/TX5UAY4q5t2.4bscwaRt4gYgliky');
 
 
-INSERT INTO item (name, price, userid, storeid)
-	VALUES ('Innus and Guun', 20.32, 1, 1);
+INSERT INTO item (name, category, price, userid, storeid)
+	VALUES ('Innus and Guun', "Craft Beer", 20.32, 1, 1);
 
 -- +goose Down
 -- SQL in this section is executed when the migration is rolled back.

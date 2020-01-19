@@ -26,6 +26,7 @@ type Item struct {
 	Id        int     `db:"id" json:"id""`
 	Timestamp string  `db:"timestamp" json:"timestamp""`
 	Name      string  `db:"name" json:"name""`
+	Category  string  `db:"category" json:"category""`
 	Price     float64 `db:"price" json:"price""`
 	Userid    int     `db:"userid" json:"userid""`
 	Storeid   int     `db:"storeid" json:"storeid""`
