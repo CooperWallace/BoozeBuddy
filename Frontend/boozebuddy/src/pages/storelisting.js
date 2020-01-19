@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Grid, List, Message} from 'semantic-ui-react';
 import components from '../components/index';
 
+import utility from '../addressUtility.js';
 
 export default class StoreListing extends Component {
 
@@ -10,8 +11,13 @@ export default class StoreListing extends Component {
 		this.state = {};
     }
 
+	componentDidMount() {
+		utility.LatLonToAddress("9927 84 Ave NW");
+
+
+	}
+
 	itemdetails(itemName) {
-        console.log(this.props.match)
 		return (
 			<List.Item>{itemName}</List.Item>
 		)
@@ -30,7 +36,7 @@ export default class StoreListing extends Component {
 						<Message>
 						<Message.Header>Store Information</Message.Header>
 						<Message.List>
-						<Message.Item>Store Name</Message.Item>
+						<Message.Item>Store Name: {this.props.match.params.storename}</Message.Item>
 						<Message.Item>Store Address</Message.Item>
 						</Message.List>
 						</Message>
