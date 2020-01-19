@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gorilla/handlers"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux" //DB interface library
 	"golang.org/x/crypto/bcrypt"
 )
@@ -26,7 +26,7 @@ var jwtKey = []byte("secretkey")
 // Create a struct that will be encoded to a JWT.
 // We add jwt.StandardClaims as an embedded type, to provide fields like expiry time
 type Claims struct {
-	UserID int `json:"userid"`
+	UserID   int    `json:"userid"`
 	Username string `json:"username"`
 	jwt.StandardClaims
 }
@@ -225,7 +225,7 @@ func (wrapper *Wrapper) handleLogin(w http.ResponseWriter, r *http.Request) {
 			//login valid, create and return JWT to client
 			expirationTime := time.Now().Add(60 * time.Minute)
 			claims := &Claims{
-				UserID: user.Id,
+				UserID:   user.Id,
 				Username: user.Username,
 				StandardClaims: jwt.StandardClaims{
 					ExpiresAt: expirationTime.Unix(),

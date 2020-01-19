@@ -4,8 +4,6 @@ import components from '../components/index';
 import Cookies from 'js-cookie';
 import '../components/components.css';
 
-const axios = require('axios');
-
 export default class StoreListing extends Component {
 
 	constructor(props) {
@@ -24,6 +22,7 @@ export default class StoreListing extends Component {
 		this.handleAddSubmit = this.handleAddSubmit.bind(this);
 		this.handleAddModalOpen = this.handleAddModalOpen.bind(this);
 		this.handleAddModalClose = this.handleAddModalClose.bind(this);
+		this.getStoreDetails = this.getStoreDetails.bind(this);
 	}
 
 	handleDropDownChange(e, data, name) {
@@ -67,29 +66,7 @@ export default class StoreListing extends Component {
 
 		let token = Cookies.get('token');
 
-		let data = JSON.stringify({
-			name: this.state.name,
-			category: this.state.category,
-			price: this.state.price
-		});
-
-		// let url = "http://localhost:8080/api/stores/" + this.props.match.params.storeID + "/items";
-
-		// axios({
-		// 	url: url, method: 'post', headers: {
-		// 		'Authorization': token, 'Accept': 'application/json',
-		// 		'Content-Type': 'application/json',
-		// 	}, data: data
-		// })
-		// 	.then((res) => {
-		// 		console.log(res)
-		// 	})
-		// 	.catch((err) => {
-		// 		console.error(err)
-		// 	})
-
 		//now post to the api
-		
 		fetch("http://localhost:8080/api/stores/" + this.props.match.params.storeID + "/items", {
 			method: "POST",
 			headers: {
@@ -98,7 +75,7 @@ export default class StoreListing extends Component {
 			body: JSON.stringify({
 				name: this.state.name,
 				category: this.state.category,
-				price: this.state.price
+				price: parseFloat(this.state.price)
 			})
 		})
 			.then((res) => {
@@ -111,19 +88,17 @@ export default class StoreListing extends Component {
 						name: "",
 						category: "",
 						addModalOpen: false
+					}, () => {
+						this.getStoreDetails()
 					})
-
 				}
 			})
 			.catch((err) => {
 				console.error(err)
-			}) 
+			})
 	}
 
-	componentDidMount() {
-		this.updateWindowDimensions();
-		window.addEventListener('resize', this.updateWindowDimensions);
-
+	getStoreDetails() {
 		//get store info based off of id that is in the url
 		fetch("http://localhost:8080/api/stores/" + this.props.match.params.storeID)
 			.then((res) => {
@@ -151,6 +126,13 @@ export default class StoreListing extends Component {
 			.catch((err) => {
 				console.error(err)
 			})
+	}
+
+	componentDidMount() {
+		this.updateWindowDimensions();
+		window.addEventListener('resize', this.updateWindowDimensions);
+		this.getStoreDetails();
+
 	}
 
 	handleAddModalOpen() {
