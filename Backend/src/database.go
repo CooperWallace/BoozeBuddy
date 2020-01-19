@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/jmoiron/sqlx" //Library with DB interaction functions
 	_ "github.com/lib/pq"     //DB driver
 	_ "github.com/mattn/go-sqlite3"
@@ -101,17 +102,18 @@ func (db *DataBase) GetStoreItems(storeID int) ([]Item, error) {
 	items := []Item{}
 
 	err := db.Select(&items, query, storeID)
+	fmt.Println(err)
 	if err != nil {
 		return nil, err
 	}
 	return items, nil
 }
 
-func (db *DataBase) AddStoreItems(newItem Item) error {
+func (db *DataBase) AddStoreItems(name string, category string, price float64, userID int, storeID int) error {
 
 	insertCmd := `INSERT INTO item (name, category, price, userid, storeid)
-		VALUES (:name, :category, :price, :userid, :storeid)`
+		VALUES ($1, $2, $3, $4, $5)`
 
-	_, err := db.NamedExec(insertCmd, newItem)
+	_, err := db.Exec(insertCmd, name, category, price, userID, storeID)
 	return err
 }

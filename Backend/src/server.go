@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -26,6 +25,7 @@ var jwtKey = []byte("secretkey")
 // Create a struct that will be encoded to a JWT.
 // We add jwt.StandardClaims as an embedded type, to provide fields like expiry time
 type Claims struct {
+	UserID int `json:"userid"`
 	Username string `json:"username"`
 	jwt.StandardClaims
 }
@@ -224,6 +224,7 @@ func (wrapper *Wrapper) handleLogin(w http.ResponseWriter, r *http.Request) {
 			//login valid, create and return JWT to client
 			expirationTime := time.Now().Add(60 * time.Minute)
 			claims := &Claims{
+				UserID: user.Id,
 				Username: user.Username,
 				StandardClaims: jwt.StandardClaims{
 					ExpiresAt: expirationTime.Unix(),
@@ -267,29 +268,68 @@ func (wrapper *Wrapper) getStoreItems(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(item)
 }
 
-func (wrapper *Wrapper) addStoreItems(w http.ResponseWriter, r *http.Request) {
+// func (wrapper *Wrapper) addStoreItems(w http.ResponseWriter, r *http.Request) {
 
+// 	w.Header().Set("Access-Control-Allow-Origin", "*")
+// 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+// 	byteResp, err := ioutil.ReadAll(r.Body)
+// 	if err != nil {
+// 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+// 		return
+// 	}
+// 	// Decode the JSON Data into a usable variable
+// 	item := Item{}
+// 	if err := json.Unmarshal(byteResp, &item); err != nil {
+// 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	err = wrapper.AddStoreItems(item)
+
+// 	if err != nil {
+// 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+// 	}
+// }
+
+func (wrapper *Wrapper) addStoreItems(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	byteResp, err := ioutil.ReadAll(r.Body)
+	// need : name category price userid and storeid
+	reqVars := mux.Vars(r)
+	storeID, err := strconv.Atoi(reqVars["storeid"])
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	reqBodyValues := Item{}
+	err = json.NewDecoder(r.Body).Decode(&reqBodyValues)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	// Decode the JSON Data into a usable variable
-	item := Item{}
-	if err := json.Unmarshal(byteResp, &item); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+
+	// todo: get username and then userID from jwt claims struct
+	jwtString := r.Header.Get("Authorization")
+
+	if len(jwtString) < 1 {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
 
-	err = wrapper.AddStoreItems(item)
+	claims := &Claims{}
+
+	_, err = jwt.ParseWithClaims(jwtString, claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+
+	err = wrapper.AddStoreItems(reqBodyValues.Name, reqBodyValues.Category, reqBodyValues.Price, claims.UserID, storeID)
 
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
-
 }
 
 func main() {
