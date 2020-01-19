@@ -38,3 +38,11 @@ func (db *DataBase) GetStores() ([]Store, error) {
 	}
 	return stores, nil
 }
+
+func (db *DataBase) AddStore(name string, address string) error {
+
+	insertCmd := `INSERT INTO store (name, address) VALUES ($1, $2)`
+
+	_, err := db.Exec(insertCmd, name, address)
+	return err
+}
