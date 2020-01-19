@@ -35,9 +35,6 @@ export default class LoginModal extends Component {
             .then((res) => {
                 console.log(res)
                 return res.json()
-                //navigate to the main page? 
-                //TODO maybe auto log them in after this?
-                //this.props.history.push("/");
             })
             .then((data) => {
                 //create a cookie for the jwt token
@@ -57,6 +54,7 @@ export default class LoginModal extends Component {
                 open={this.props.active}
                 closeOnDimmerClick={true}
                 onClose={() => { this.props.handleClose() }}>
+                <Modal.Header>Please sign in!</Modal.Header>
                 <Modal.Content>
                     <Form>
                         <Form.Group widths='equal'>
@@ -77,7 +75,7 @@ export default class LoginModal extends Component {
                         </Form.Group>
                         <h5>Not a member? <a href="/register">Sign up here!</a></h5>
                         <Form.Group>
-                            <Form.Button onClick={this.handleLogin} content="Submit" primary></Form.Button>
+                            <Form.Button onClick={this.handleLogin} content="Submit" color="orange"></Form.Button>
                         </Form.Group>
                     </Form>
                 </Modal.Content>

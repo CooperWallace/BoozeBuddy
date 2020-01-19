@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Grid, List, Message, Input, Dropdown, Image, Segment, Button } from 'semantic-ui-react';
+import { Grid, List, Message, Input, Dropdown, Image, Segment, Button, Form, Modal } from 'semantic-ui-react';
 import components from '../components/index';
+import Cookies from 'js-cookie';
 import '../components/components.css';
 
 export default class StoreListing extends Component {
@@ -8,12 +9,31 @@ export default class StoreListing extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			listingData: []
+			listingData: [],
+			errorList: [],
+			addModalOpen: false
 		};
 
 		this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
 		this.handleSignInModalClose = this.handleSignInModalClose.bind(this);
 		this.handleSignInModalOpen = this.handleSignInModalOpen.bind(this);
+		this.handleInputChange = this.handleInputChange.bind(this);
+		this.handleDropDownChange = this.handleDropDownChange.bind(this);
+		this.handleAddSubmit = this.handleAddSubmit.bind(this);
+		this.handleAddModalOpen = this.handleAddModalOpen.bind(this);
+		this.handleAddModalClose = this.handleAddModalClose.bind(this);
+	}
+
+	handleDropDownChange(e, data, name) {
+		this.setState({
+			[name]: data.value
+		})
+	}
+
+	handleInputChange(e) {
+		this.setState({
+			[e.target.name]: e.target.value
+		})
 	}
 
 	handleSignInModalClose() {
@@ -26,6 +46,56 @@ export default class StoreListing extends Component {
 		this.setState({
 			loginModalOpen: true
 		})
+	}
+
+	handleAddSubmit() {
+		//check values
+		let fields = ["name", "category", "price"]
+		let errors = [];
+		//lets check that the values are good
+		fields.forEach((field) => {
+			if (!this.state[field]) {
+				errors.push(field);
+			}
+		})
+
+		if (errors.length === 0) {
+			console.log("here")
+		}
+
+		let token = Cookies.get('token');
+
+		//now post to the api
+		fetch("http://localhost:8080/api/stores/" + this.props.match.params.storeID + "/items", {
+			method: "POST",
+			withCredentials: true,
+			credentials: 'include',
+			headers: {
+				'Authorization': token
+			},
+			body: JSON.stringify({
+				name: this.state.name,
+				category: this.state.category,
+				price: this.state.price
+			})
+		})
+			.then((res) => {
+				if (!res.ok) {
+					console.error("Response not ok!", res)
+				} else {
+					//close the modal && reset the state
+					this.setState({
+						price: "",
+						name: "",
+						category: "",
+						addModalOpen: false
+					})
+
+				}
+			})
+			.catch((err) => {
+				console.error(err)
+			})
 	}
 
 	componentDidMount() {
@@ -59,6 +129,24 @@ export default class StoreListing extends Component {
 			.catch((err) => {
 				console.error(err)
 			})
+	}
+
+	handleAddModalOpen() {
+		//check if they're logged in or not
+		let token = Cookies.get('token');
+		if (token) {
+			this.setState({
+				addModalOpen: true
+			})
+		} else {
+			this.handleSignInModalOpen(); //open the sign in modal
+		}
+	}
+
+	handleAddModalClose() {
+		this.setState({
+			addModalOpen: false
+		})
 	}
 
 	updateWindowDimensions() {
@@ -114,6 +202,15 @@ export default class StoreListing extends Component {
 				{ key: 3, text: 'Best Value', value: 3 },
 			]
 
+			const categories = [
+				{ key: 1, text: 'Beer', value: 'beer' },
+				{ key: 2, text: 'Rum', value: 'rum' },
+				{ key: 3, text: 'Vodka', value: 'vodka' },
+				{ key: 4, text: 'Tequila', value: 'tequila' },
+				{ key: 5, text: 'Whiskey', value: 'whiskey' },
+				{ key: 6, text: 'Gin', value: 'gin' }
+			]
+
 			return (
 				<Grid>
 					<components.BoozeHeader handleSignIn={this.handleSignInModalOpen} history={this.props.history} width={this.state.width} />
@@ -149,7 +246,7 @@ export default class StoreListing extends Component {
 							<Dropdown clearable options={options} selection />
 						</Grid.Column>
 						<Grid.Column>
-							<Button style={{ marginTop: '35px' }} color="orange">Add Item</Button>
+							<Button onClick={this.handleAddModalOpen} style={{ marginTop: '35px' }} color="orange">Add Item</Button>
 						</Grid.Column>
 					</Grid.Row>
 					<Grid.Row className="store-listing-container">
@@ -157,6 +254,55 @@ export default class StoreListing extends Component {
 							<List size={"massive"}>
 								{this.createItemsList()}
 							</List>
+						</Grid.Column>
+					</Grid.Row>
+					<Grid.Row>
+						<Grid.Column>
+							<Modal
+								closeOnDimmerClick={true}
+								size="tiny"
+								onOpen={this.handleAddModalOpen}
+								onClose={this.handleAddModalClose}
+								open={this.state.addModalOpen}>
+								<Modal.Header>Add new listing</Modal.Header>
+								<Modal.Content>
+									<Form >
+										<Form.Group widths="equal">
+											<Form.Input
+												name="name"
+												placeholder="Heineken"
+												label="Name"
+												required
+												error={this.state.errorList.includes("name")}
+												onChange={(e) => { this.handleInputChange(e) }} />
+										</Form.Group>
+										<Form.Group widths="equal">
+											<Form.Dropdown
+												name="category"
+												placeholder="Beer"
+												label="Category"
+												fluid selection
+												options={categories}
+												error={this.state.errorList.includes("category")}
+												required
+												onChange={(e, d) => { this.handleDropDownChange(e, d, "category") }} />
+										</Form.Group>
+										<Form.Group widths="equal">
+											<Form.Input
+												name="price"
+												type="number"
+												placeholder="25"
+												label="Price"
+												error={this.state.errorList.includes("price")}
+												required
+												onChange={(e) => { this.handleInputChange(e) }}></Form.Input>
+										</Form.Group>
+										<Form.Group>
+											<Form.Button onClick={this.handleAddSubmit} color="orange">Submit</Form.Button>
+										</Form.Group>
+									</Form>
+								</Modal.Content>
+							</Modal>
 						</Grid.Column>
 					</Grid.Row>
 					<Grid.Row>
