@@ -13,6 +13,10 @@ type Wrapper struct {
 }
 
 func (wrapper *Wrapper) getStores(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	// Call GetStores (located in database.go)
 	stores, err := wrapper.GetStores()
 
@@ -23,6 +27,26 @@ func (wrapper *Wrapper) getStores(w http.ResponseWriter, r *http.Request) {
 
 	// Encode data to JSON and write to response writer
 	err = json.NewEncoder(w).Encode(stores)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (wrapper *Wrapper) addStore(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	reqBodyValues := Store{}
+
+	err := json.NewDecoder(r.Body).Decode(&reqBodyValues)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	err = wrapper.AddStore(reqBodyValues.Name, reqBodyValues.Address)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -49,6 +73,8 @@ func main() {
 	// Associate routes with handler functions
 	subRouter := router.PathPrefix("/api").Subrouter()
 	subRouter.HandleFunc("/stores", wrapper.getStores).Methods("GET")
+	subRouter.HandleFunc("/stores", wrapper.addStore).Methods("POST")
+	subRouter.HandleFunc("/registration", wrapper.handleRegistration).Methods("POST")
 
 	// Listen and serve server on port 8080
 	http.ListenAndServe(":8080", router)
